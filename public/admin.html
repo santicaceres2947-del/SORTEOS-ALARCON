@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>ADMIN SORTEO</title>
+<div class="card">
+  
+
+
+</div>
+
+<style>
+
+body{
+font-family:Arial;
+background:#111;
+color:white;
+text-align:center;
+}
+
+h1{
+color:gold;
+}
+
+.card{
+background:#222;
+padding:20px;
+margin:20px;
+border-radius:10px;
+}
+
+input,button{
+
+padding:10px;
+margin:5px;
+border-radius:5px;
+border:none;
+
+}
+
+button{
+
+background:gold;
+font-weight:bold;
+cursor:pointer;
+
+}
+
+table{
+
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+
+}
+
+td,th{
+
+border:1px solid #444;
+padding:8px;
+
+}
+
+.progreso{
+
+width:100%;
+background:#333;
+height:30px;
+border-radius:10px;
+overflow:hidden;
+
+}
+
+.barra{
+
+height:100%;
+background:lime;
+
+}
+
+</style>
+
+</head>
+<script>
+
+async function subirImagen(){
+
+let archivo = document.getElementById("imagen").files[0]
+
+if(!archivo){
+alert("Selecciona una imagen")
+return
+}
+
+let form = new FormData()
+
+form.append("imagen", archivo)
+
+let res = await fetch("/admin/subir-imagen",{
+method:"POST",
+body:form
+})
+
+let data = await res.json()
+
+alert("Imagen subida correctamente")
+
+}
+
+</script>
+<script>
+
+async function cargarImagenesAdmin(){
+
+let res = await fetch("/imagenes")
+let imagenes = await res.json()
+
+let cont=document.getElementById("listaImagenes")
+
+cont.innerHTML=""
+
+imagenes.forEach(img=>{
+
+cont.innerHTML+=`
+<div style="margin:10px">
+
+<img src="/imagenes/${img}" width="200">
+
+<br>
+
+<button onclick="eliminarImagen('${img}')">
+Eliminar
+</button>
+
+</div>
+`
+
+})
+
+}
+
+async function eliminarImagen(nombre){
+
+await fetch("/admin/eliminar-imagen",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({nombre})
+})
+
+cargarImagenesAdmin()
+
+}
+
+cargarImagenesAdmin()
+
+</script>
+<script>
+
+async function cargarImagenesAdmin(){
+
+let res = await fetch("/imagenes")
+let imagenes = await res.json()
+
+let cont = document.getElementById("listaImagenes")
+
+cont.innerHTML=""
+
+imagenes.forEach(img=>{
+
+let div = document.createElement("div")
+
+div.style.margin="10px"
+
+div.innerHTML = `
+<img src="/imagenes/${img}" width="200"><br>
+<button onclick="eliminarImagen('${img}')">Eliminar</button>
+`
+
+cont.appendChild(div)
+
+})
+
+}
+
+async function eliminarImagen(nombre){
+
+await fetch("/admin/eliminar-imagen",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({nombre})
+})
+
+alert("Imagen eliminada")
+
+cargarImagenesAdmin()
+
+}
+
+cargarImagenesAdmin()
+
+</script>
+<body>
+
+<h1>⚙️ PANEL ADMIN SORTEO</h1>
+
+<h3>Precio del número</h3>
+
+<input id="precioNuevo" placeholder="Nuevo precio">
+
+<button onclick="cambiarPrecio()">Cambiar precio</button>
+
+<p id="precioActual"></p>
+
+<div class="card">
+
+<h3>Buscar número</h3>
+
+<input id="numeroBuscar" placeholder="Numero">
+
+<button onclick="buscar()">Buscar</button>
+
+<div id="resultado"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Liberar números</h3>
+
+<input id="liberarNumeros" placeholder="Ej: 12,45,89">
+
+<button onclick="liberar()">Liberar</button>
+
+</div>
+
+<div class="card">
+
+<h3>Progreso del sorteo</h3>
+
+<div class="progreso">
+
+<div id="barra" class="barra" style="width:0%"></div>
+
+</div>
+
+<p id="textoProgreso"></p>
+
+</div>
+
+<div class="card">
+
+<h3>Cuentas de pago</h3>
+
+<button onclick="verCuentas()">Ver cuentas</button>
+
+<div id="cuentas"></div>
+
+<h4>Agregar cuenta</h4>
+
+<input id="whatsapp" placeholder="WhatsApp">
+<input id="nequi" placeholder="Nequi">
+<input id="daviplata" placeholder="Daviplata">
+
+<button onclick="agregarCuenta()">Agregar</button>
+
+</div>
+
+<div class="card">
+    <h2>Cambiar logo</h2>
+
+<input type="file" id="logoArchivo">
+
+<button onclick="subirLogo()">
+Subir nuevo logo
+</button>
+
+<h2>Imágenes del sorteo</h2>
+
+
+
+
+<input type="file" id="imagen">
+
+<button onclick="subirImagen()">Subir imagen</button>
+<div id="galeriaAdmin"></div>
+<h2>Imágenes del sorteo</h2>
+
+<div id="listaImagenes" style="display:flex;flex-wrap:wrap;gap:15px;"></div>
+
+
+<table>
+
+<thead>
+
+<tr>
+<th>Numero</th>
+<th>Nombre</th>
+<th>Telefono</th>
+<th>Referencia</th>
+</tr>
+<div class="card">
+
+<h3>Fecha de cierre del sorteo</h3>
+
+<input type="datetime-local" id="fechaCierre">
+
+<button onclick="guardarCierre()">Guardar fecha</button>
+
+</div>
+</thead>
+
+<tbody id="tabla"></tbody>
+
+</table>
+
+</div>
+
+<script>
+    async function actualizarContador(){
+
+let res = await fetch("/recaudado")
+
+let data = await res.json()
+
+document.getElementById("contadorDinero").innerText =
+"💰 Recaudado: $" + data.recaudado
+
+}
+
+async function contadorCierre(){
+
+let res = await fetch("/admin/cierre")
+
+let data = await res.json()
+
+if(!data.cierre) return
+
+let cierre = new Date(data.cierre)
+
+setInterval(()=>{
+
+let ahora = new Date()
+
+let diff = cierre - ahora
+
+if(diff <= 0){
+
+document.getElementById("contadorTiempo").innerText =
+"⛔ SORTEO CERRADO"
+
+return
+
+}
+
+let horas = Math.floor(diff/3600000)
+let minutos = Math.floor((diff % 3600000)/60000)
+let segundos = Math.floor((diff % 60000)/1000)
+
+document.getElementById("contadorTiempo").innerText =
+"⏳ Cierra en: "+horas+"h "+minutos+"m "+segundos+"s"
+
+},1000)
+
+}
+async function cargarImagenes(){
+
+let res=await fetch("/admin/imagenes")
+
+let data=await res.json()
+
+let contenedor=document.getElementById("galeriaAdmin")
+
+contenedor.innerHTML=""
+
+data.forEach(img=>{
+
+let i=document.createElement("img")
+
+i.src="/imagenes/"+img
+
+i.style.width="150px"
+i.style.margin="10px"
+
+contenedor.appendChild(i)
+
+})
+
+}
+
+cargarImagenes()
+    async function guardarCierre(){
+
+let fecha = document.getElementById("fechaCierre").value
+
+await fetch("/admin/cierre",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({fecha})
+
+})
+
+alert("Fecha de cierre guardada")
+
+}
+    async function cargarPrecio(){
+
+let res = await fetch("/admin/precio")
+
+let data = await res.json()
+
+document.getElementById("precioActual").innerText =
+"Precio actual: $" + data.precio
+
+}
+
+async function cambiarPrecio(){
+
+let precio = document.getElementById("precioNuevo").value
+
+await fetch("/admin/precio",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({precio:parseInt(precio)})
+
+})
+
+alert("Precio actualizado")
+
+cargarPrecio()
+
+}
+
+async function buscar(){
+
+let n=document.getElementById("numeroBuscar").value
+
+let res=await fetch("/buscar?numero="+n)
+
+let data=await res.json()
+
+if(data.estado=="disponible"){
+
+document.getElementById("resultado").innerHTML="🟢 Disponible"
+
+}else{
+
+document.getElementById("resultado").innerHTML=
+
+"🔴 Vendido<br><br>"+
+
+"Nombre: "+data.nombre+"<br>"+
+"Telefono: "+data.telefono+"<br>"+
+"Referencia: "+data.referencia
+
+}
+
+}
+
+async function liberar(){
+
+let lista=document.getElementById("liberarNumeros").value
+
+let numeros=lista.split(",").map(n=>parseInt(n))
+
+await fetch("/liberar",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({numeros})
+
+})
+
+alert("Numeros liberados")
+
+}
+
+async function cargarVentas(){
+
+let res=await fetch("/ventas")
+
+let data=await res.json()
+
+let tabla=document.getElementById("tabla")
+
+tabla.innerHTML=""
+
+data.forEach(v=>{
+
+let tr=document.createElement("tr")
+
+tr.innerHTML=
+
+"<td>"+String(v.numero).padStart(6,'0')+"</td>"+
+"<td>"+v.nombre+"</td>"+
+"<td>"+v.telefono+"</td>"+
+"<td>"+v.referencia+"</td>"
+
+tabla.appendChild(tr)
+
+})
+
+let vendidos=data.length
+
+let total=1000000
+
+let porcentaje=(vendidos/total)*100
+
+document.getElementById("barra").style.width=porcentaje+"%"
+
+document.getElementById("textoProgreso").innerText=
+
+vendidos+" boletos vendidos"
+
+}
+
+async function verCuentas(){
+
+let res=await fetch("/admin/cuentas")
+
+let data=await res.json()
+
+let div=document.getElementById("cuentas")
+
+div.innerHTML=""
+
+data.forEach(c=>{
+
+let p=document.createElement("p")
+
+p.innerHTML=
+
+"ID:"+c.id+
+" | WhatsApp:"+c.whatsapp+
+" | Nequi:"+c.nequi+
+" | Daviplata:"+c.daviplata+
+" <button onclick='eliminar("+c.id+")'>Eliminar</button>"
+
+div.appendChild(p)
+
+})
+
+}
+
+async function agregarCuenta(){
+
+let whatsapp=document.getElementById("whatsapp").value
+let nequi=document.getElementById("nequi").value
+let daviplata=document.getElementById("daviplata").value
+
+await fetch("/admin/agregar-cuenta",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+whatsapp,
+nequi,
+daviplata
+})
+
+})
+
+alert("Cuenta agregada")
+
+verCuentas()
+
+}
+
+async function eliminar(id){
+
+await fetch("/admin/eliminar-cuenta",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({id})
+
+})
+
+alert("Cuenta eliminada")
+
+verCuentas()
+
+}
+
+cargarVentas()
+setInterval(cargarVentas,5000)
+cargarPrecio()
+actualizarContador()
+contadorCierre()
+
+setInterval(actualizarContador,5000)
+
+</script>
+<script>
+
+async function cargarImagenesAdmin(){
+
+let res = await fetch("/imagenes")
+let imagenes = await res.json()
+
+let cont = document.getElementById("listaImagenes")
+
+cont.innerHTML=""
+
+imagenes.forEach(img=>{
+
+let box=document.createElement("div")
+
+box.style.border="1px solid #ccc"
+box.style.padding="10px"
+box.style.textAlign="center"
+
+box.innerHTML=`
+<img src="/imagenes/${img}" width="180"><br><br>
+<button onclick="eliminarImagen('${img}')">Eliminar</button>
+`
+
+cont.appendChild(box)
+
+})
+
+}
+
+async function eliminarImagen(nombre){
+
+await fetch("/admin/eliminar-imagen",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({nombre})
+})
+
+alert("Imagen eliminada")
+
+cargarImagenesAdmin()
+
+}
+
+cargarImagenesAdmin()
+
+</script>
+<script>
+
+async function subirLogo(){
+
+let archivo = document.getElementById("logoArchivo").files[0]
+
+if(!archivo){
+alert("Selecciona un logo")
+return
+}
+
+let form = new FormData()
+
+form.append("logo", archivo)
+
+await fetch("/admin/subir-logo",{
+method:"POST",
+body:form
+})
+
+alert("Logo actualizado")
+
+}
+
+</script>
+
+</body>
+
+</html>

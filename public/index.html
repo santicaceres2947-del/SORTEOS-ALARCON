@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>RIFAS ENTRE AMIGOS EL RUBI</title>
+</div>
+<div id="logoContainer">
+<img src="/logo.png" id="logoSorteo">
+</div>
+
+<style>
+    #logoContainer{
+text-align:center;
+margin-top:20px;
+}
+
+#logoSorteo{
+width:220px;
+max-width:90%;
+}
+    #logoContainer{
+text-align:center;
+margin:20px;
+}
+
+#logoSorteo{
+width:220px;
+max-width:90%;
+}
+    #galeria{
+display:flex;
+justify-content:center;
+gap:15px;
+margin:20px;
+flex-wrap:wrap;
+}
+
+#galeria img{
+width:200px;
+border-radius:10px;
+box-shadow:0 0 10px gold;
+transition:0.3s;
+}
+
+#galeria img:hover{
+transform:scale(1.05);
+}
+    #contadorBox{
+display:flex;
+justify-content:center;
+gap:20px;
+margin:20px;
+}
+
+.tiempo{
+background:#111;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 15px gold;
+width:90px;
+}
+
+.tiempo span{
+font-size:35px;
+font-weight:bold;
+color:gold;
+text-shadow:0 0 10px gold;
+}
+
+.tiempo p{
+margin:0;
+font-size:12px;
+color:white;
+}
+    #maquinaBox{
+
+margin:30px auto;
+width:300px;
+padding:20px;
+border-radius:15px;
+background:black;
+box-shadow:0 0 25px gold;
+
+}
+
+#mensajeSuerte{
+
+color:gold;
+text-shadow:0 0 10px gold;
+animation:parpadeo 1s infinite;
+
+}
+
+#maquinaNumero{
+
+font-size:50px;
+font-weight:bold;
+background:#111;
+color:lime;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+letter-spacing:5px;
+
+}
+
+#luces{
+
+margin-top:15px;
+
+}
+
+#luces span{
+
+display:inline-block;
+width:15px;
+height:15px;
+border-radius:50%;
+background:red;
+margin:5px;
+animation:luces 0.5s infinite alternate;
+
+}
+
+#luces span:nth-child(2){background:yellow}
+#luces span:nth-child(3){background:lime}
+#luces span:nth-child(4){background:cyan}
+#luces span:nth-child(5){background:orange}
+#luces span:nth-child(6){background:pink}
+
+@keyframes luces{
+
+from{opacity:0.3}
+to{opacity:1}
+
+}
+
+@keyframes parpadeo{
+
+0%{opacity:1}
+50%{opacity:0.4}
+100%{opacity:1}
+
+}
+
+body{
+font-family:Arial;
+text-align:center;
+background:radial-gradient(circle,#111,#000);
+color:white;
+}
+
+h1{
+font-size:40px;
+color:gold;
+text-shadow:0 0 15px gold;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(10,1fr);
+gap:8px;
+margin:20px;
+}
+
+.numero{
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+background:lime;
+color:black;
+transition:0.2s;
+}
+
+.numero:hover{
+transform:scale(1.1);
+box-shadow:0 0 10px lime;
+}
+
+.pagado{
+background:red;
+color:white;
+cursor:not-allowed;
+}
+
+.botones{
+margin:20px;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:gold;
+font-weight:bold;
+margin:5px;
+}
+
+button:hover{
+background:orange;
+}
+
+</style>
+
+</head>
+<script>
+
+async function cargarImagenes(){
+
+let res = await fetch("/imagenes")
+
+let imagenes = await res.json()
+
+let contenedor = document.getElementById("galeriaSorteo")
+
+contenedor.innerHTML=""
+
+imagenes.forEach(img=>{
+
+let foto = document.createElement("img")
+
+foto.src="/imagenes/"+img
+
+foto.style.width="300px"
+foto.style.margin="10px"
+foto.style.borderRadius="10px"
+
+contenedor.appendChild(foto)
+
+})
+
+}
+
+cargarImagenes()
+
+</script>
+<script>
+
+let imagenes=[]
+let posicion=0
+
+async function cargarImagenes(){
+
+let res = await fetch("/imagenes")
+imagenes = await res.json()
+
+if(imagenes.length==0) return
+
+mostrarImagen()
+
+setInterval(()=>{
+posicion++
+if(posicion>=imagenes.length) posicion=0
+mostrarImagen()
+},3000)
+
+}
+
+function mostrarImagen(){
+
+let cont=document.getElementById("slider")
+
+cont.innerHTML=`
+<img src="/imagenes/${imagenes[posicion]}" 
+style="width:350px;border-radius:15px;box-shadow:0 0 20px gold">
+`
+
+}
+
+cargarImagenes()
+
+</script>
+<body>
+
+<h1>RIFAS ENTRE AMIGOS EL RUBI</h1>
+<div id="slider" style="text-align:center;margin:20px;"></div>
+<h2>Imágenes del sorteo</h2>
+
+<div id="listaImagenes"></div>
+<div id="maquinaBox">
+<div id="contadorBox">
+
+<div class="tiempo">
+<span id="dias">00</span>
+<p>DÍAS</p>
+</div>
+
+<div class="tiempo">
+<span id="horas">00</span>
+<p>HORAS</p>
+</div>
+
+<div class="tiempo">
+<span id="minutos">00</span>
+<p>MIN</p>
+</div>
+
+<div class="tiempo">
+<span id="segundos">00</span>
+<p>SEG</p>
+</div>
+
+</div>
+
+<h2 id="mensajeSuerte">🍀 ¡BUENA SUERTE! 🍀</h2>
+
+<div id="maquinaNumero">000000</div>
+
+<div id="luces">
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+</div>
+
+</div>
+
+<input id="buscarNumero" placeholder="Buscar número">
+<button onclick="buscarNumero()">Buscar</button>
+<button onclick="abrirVerificar()">🎟️ Verificar mis boletos</button>
+
+<div id="panelVerificar" style="display:none;margin-top:20px;">
+
+<h3>Consultar mis números</h3>
+
+<input id="telefonoConsulta" placeholder="Ingresa tu número de teléfono">
+
+<button onclick="consultarNumeros()">Buscar</button>
+
+<div id="resultadoNumeros"></div>
+
+</div>
+
+
+<div id="resultadoBusqueda"></div>
+<div id="galeria"></div>
+
+<div class="botones">
+
+<button onclick="anterior()">Anterior</button>
+<button onclick="siguiente()">Siguiente</button>
+
+<br><br>
+
+<button onclick="maquinaAzar()">🎰 Maquinita</button>
+
+<button onclick="pagar()">💳 Pagar ahora</button>
+
+
+</div>
+
+<h3 id="paginaTexto"></h3>
+
+<div id="grid" class="grid"></div>
+
+<h3 id="estadisticas"></h3>
+<div id="maquinaBarra" style="
+width:80%;
+height:40px;
+margin:auto;
+background:#222;
+border-radius:10px;
+overflow:hidden;
+display:none;
+">
+
+<div id="maquinaAnimacion" style="
+height:100%;
+width:0%;
+background:linear-gradient(90deg,gold,orange);
+transition:width 0.1s;
+"></div>
+
+</div>
+
+<h3 id="numerosMaquina"></h3>
+
+<script>
+    function abrirVerificar(){
+
+let panel=document.getElementById("panelVerificar")
+
+if(panel.style.display=="none"){
+
+panel.style.display="block"
+
+}else{
+
+panel.style.display="none"
+
+}
+
+}
+    async function consultarNumeros(){
+
+let telefono = document.getElementById("telefonoConsulta").value
+
+let res = await fetch("/mis-numeros?telefono="+telefono)
+
+let data = await res.json()
+
+if(data.length == 0){
+
+document.getElementById("resultadoNumeros").innerHTML =
+"No se encontraron números"
+
+return
+
+}
+
+let lista = data.map(n=>String(n.numero).padStart(6,'0')).join(", ")
+
+document.getElementById("resultadoNumeros").innerHTML =
+"🎟️ Tus números:<br><br>"+lista
+
+}
+    async function iniciarContador(){      
+let res = await fetch("/admin/cierre")
+let data = await res.json()
+
+if(!data.cierre) return
+
+let cierre = new Date(data.cierre)
+
+setInterval(()=>{
+
+let ahora = new Date()
+let diff = cierre - ahora
+
+if(diff <= 0){
+
+document.getElementById("contadorBox").innerHTML =
+"<h2>SORTEO CERRADO</h2>"
+
+return
+}
+
+let dias = Math.floor(diff/86400000)
+let horas = Math.floor(diff%86400000/3600000)
+let minutos = Math.floor(diff%3600000/60000)
+let segundos = Math.floor(diff%60000/1000)
+
+document.getElementById("dias").innerText=dias
+document.getElementById("horas").innerText=horas
+document.getElementById("minutos").innerText=minutos
+document.getElementById("segundos").innerText=segundos
+
+},1000)
+
+}
+async function cargarGaleria(){
+
+let res=await fetch("/admin/imagenes")
+
+let data=await res.json()
+
+let galeria=document.getElementById("galeria")
+
+galeria.innerHTML=""
+
+data.forEach(img=>{
+
+let i=document.createElement("img")
+
+i.src="/imagenes/"+img
+
+i.style.width="200px"
+i.style.margin="10px"
+i.style.borderRadius="10px"
+
+galeria.appendChild(i)
+
+})
+
+}
+
+cargarGaleria()
+
+iniciarContador()
+    async function contadorCierre(){
+
+let res = await fetch("/admin/cierre")
+
+let data = await res.json()
+
+if(!data.cierre) return
+
+let cierre = new Date(data.cierre)
+
+setInterval(()=>{
+
+let ahora = new Date()
+
+let diff = cierre - ahora
+
+if(diff <= 0){
+
+document.getElementById("contadorTiempo").innerText =
+"⛔ SORTEO CERRADO"
+
+return
+
+}
+
+let horas = Math.floor(diff/3600000)
+let minutos = Math.floor(diff%3600000/60000)
+let segundos = Math.floor(diff%60000/1000)
+
+document.getElementById("contadorTiempo").innerText =
+"⏳ Cierra en: "+horas+"h "+minutos+"m "+segundos+"s"
+
+},1000)
+
+}
+iniciarContador()
+setInterval(iniciarContador,5000)
+
+    async function actualizarContador(){
+
+let res = await fetch("/recaudado")
+
+let data = await res.json()
+
+document.getElementById("contadorDinero").innerText =
+"💰 Recaudado: $" + data.recaudado
+
+}
+
+
+actualizarContador()
+contadorCierre()
+setInterval(actualizarContador,5000)
+
+let pagina=1
+let seleccionados=[]
+let precio=10000
+async function cargarPrecio(){
+
+let res = await fetch("/admin/precio")
+
+let data = await res.json()
+
+precio = data.precio
+
+}
+
+function siguiente(){
+pagina++
+cargar()
+}
+
+function anterior(){
+if(pagina>1){
+pagina--
+cargar()
+}
+}
+
+function cargar(){
+
+document.getElementById("paginaTexto").innerText="Página "+pagina
+
+fetch("/numeros?pagina="+pagina)
+.then(r=>r.json())
+.then(data=>{
+
+let grid=document.getElementById("grid")
+
+grid.innerHTML=""
+
+data.forEach(n=>{
+
+let div=document.createElement("div")
+
+div.className="numero"
+
+div.innerText=String(n.numero).padStart(6,'0')
+
+if(n.estado=="pagado"){
+
+div.classList.add("pagado")
+
+}else{
+
+div.onclick=()=>toggleSeleccion(n.numero,div)
+
+}
+
+grid.appendChild(div)
+
+})
+
+})
+
+}
+
+function toggleSeleccion(numero,div){
+
+numero=parseInt(numero)
+
+if(seleccionados.includes(numero)){
+
+seleccionados=seleccionados.filter(n=>n!==numero)
+div.style.background="lime"
+
+}else{
+
+seleccionados.push(numero)
+div.style.background="orange"
+
+}
+
+}
+
+async function maquinaAzar(){
+
+let cantidad = prompt("¿Cuántos números quieres?")
+
+if(!cantidad) return
+
+cantidad = parseInt(cantidad)
+
+let display = document.getElementById("maquinaNumero")
+
+if(!display){
+alert("Error: no existe el display de la maquinita")
+return
+}
+
+let anim = setInterval(()=>{
+
+let r = Math.floor(Math.random()*1000000)
+
+display.innerText = String(r).padStart(6,'0')
+
+},70)
+
+setTimeout(async ()=>{
+
+clearInterval(anim)
+
+try{
+
+let res = await fetch("/azar?cantidad="+cantidad)
+
+let data = await res.json()
+
+seleccionados = data.map(n=>parseInt(n.numero))
+
+display.innerText = seleccionados
+.map(n=>String(n).padStart(6,'0'))
+.join(" - ")
+
+cargar()
+
+}catch(e){
+
+alert("Error conectando con la maquinita")
+
+console.log(e)
+
+}
+
+},3000)
+
+}
+function buscarNumero(){
+
+let numero = document.getElementById("buscarNumero").value
+
+numero = parseInt(numero)
+
+let paginaNumero = Math.floor(numero/100)+1
+
+pagina = paginaNumero
+
+cargar()
+
+setTimeout(()=>{
+
+let elementos = document.querySelectorAll(".numero")
+
+elementos.forEach(el=>{
+
+if(el.innerText == String(numero).padStart(6,'0')){
+
+el.scrollIntoView({behavior:"smooth",block:"center"})
+el.style.boxShadow="0 0 20px gold"
+
+}
+
+})
+
+},500)
+
+}
+async function pagar(){
+
+if(seleccionados.length==0){
+
+alert("Selecciona números")
+
+return
+
+}
+
+let nombre=prompt("Nombre completo")
+
+let telefono=prompt("Teléfono")
+
+let referencia="REF-"+Date.now()
+
+let cuenta=await fetch("/cuenta-random").then(r=>r.json())
+
+let whatsapp=cuenta.whatsapp
+let nequi=cuenta.nequi
+let daviplata=cuenta.daviplata
+
+alert(
+
+"INSTRUCCIONES DE PAGO\n\n"+
+"💰 Valor por número: $" + precio+
+"Puedes pagar por:\n\n"+
+"📲 NEQUI: "+nequi+"\n"+
+"📲 DAVIPLATA: "+daviplata+"\n\n"+
+"⚠️ Después envía el comprobante al WhatsApp."
+
+)
+
+fetch("/pago",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+
+numeros:seleccionados,
+nombre:nombre,
+telefono:telefono,
+referencia:referencia
+
+})
+
+})
+
+let mensaje=
+
+"🎟️ COMPRA DE SORTEO\n\n"+
+
+"Referencia: "+referencia+"\n\n"+
+
+"Nombre: "+nombre+"\n"+
+"Telefono: "+telefono+"\n\n"+
+
+"Numeros:\n"+
+
+seleccionados.map(n=>String(n).padStart(6,'0')).join(", ")+"\n\n"+
+
+"Total: $"+(seleccionados.length*precio)+"\n\n"+
+
+"Envío comprobante de pago."
+
+window.open(
+"https://wa.me/"+whatsapp+"?text="+encodeURIComponent(mensaje)
+)
+
+seleccionados=[]
+
+cargar()
+
+}
+
+async function admin(){
+
+let pass=prompt("Contraseña admin")
+
+let conf=await fetch("/config").then(r=>r.json())
+
+if(pass!==conf.adminPass){
+
+alert("Contraseña incorrecta")
+return
+
+}
+
+let numeros=prompt("Numeros a liberar separados por coma")
+
+let lista=numeros.split(",").map(n=>parseInt(n))
+
+fetch("/liberar",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({numeros:lista})
+
+})
+.then(r=>r.json())
+.then(data=>{
+
+alert(data.mensaje)
+cargar()
+
+})
+
+}
+
+async function panelCuentas(){
+
+let pass=prompt("Contraseña admin")
+
+let conf=await fetch("/config").then(r=>r.json())
+
+if(pass!==conf.adminPass){
+
+alert("Contraseña incorrecta")
+return
+
+}
+
+let cuentas=await fetch("/admin/cuentas").then(r=>r.json())
+
+let texto="CUENTAS ACTIVAS\n\n"
+
+cuentas.forEach(c=>{
+
+texto+="ID:"+c.id+
+"\nWhatsApp:"+c.whatsapp+
+"\nNequi:"+c.nequi+
+"\nDaviplata:"+c.daviplata+
+"\n\n"
+
+})
+
+let opcion=prompt(
+
+texto+
+"OPCIONES\n\n"+
+"1 Agregar cuenta\n"+
+"2 Eliminar cuenta"
+
+)
+
+if(opcion==1){
+
+let whatsapp=prompt("Número WhatsApp")
+let nequi=prompt("Número Nequi")
+let daviplata=prompt("Número Daviplata")
+
+await fetch("/admin/agregar-cuenta",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+whatsapp,
+nequi,
+daviplata
+})
+
+})
+
+alert("Cuenta agregada")
+
+}
+
+if(opcion==2){
+
+let id=prompt("ID de la cuenta a eliminar")
+
+await fetch("/admin/eliminar-cuenta",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({id})
+
+})
+
+alert("Cuenta eliminada")
+
+}
+
+}
+
+async function iniciar(){
+    
+
+await cargarPrecio()
+
+cargar()
+
+}
+
+iniciar()
+
+</script>
+
+</body>
+
+</html>
