@@ -97,8 +97,11 @@ let form = new FormData()
 
 form.append("imagen", archivo)
 
-let res = await fetch("/admin/subir-imagen",{
+fetch("/admin/subir-imagen",{
 method:"POST",
+headers:{
+"x-admin-pass": passGlobal
+},
 body:form
 })
 
@@ -142,9 +145,12 @@ Eliminar
 
 async function eliminarImagen(nombre){
 
-await fetch("/admin/eliminar-imagen",{
+fetch("/admin/eliminar-imagen",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
 body:JSON.stringify({nombre})
 })
 
@@ -317,6 +323,18 @@ Subir nuevo logo
 </div>
 
 <script>
+    let passGlobal = prompt("Ingrese contraseña admin")
+
+function fetchAdmin(url, options = {}) {
+
+if(!options.headers) options.headers = {}
+
+options.headers["x-admin-pass"] = passGlobal
+
+return fetch(url, options)
+
+}
+
     async function actualizarContador(){
 
 let res = await fetch("/recaudado")
@@ -330,7 +348,14 @@ document.getElementById("contadorDinero").innerText =
 
 async function contadorCierre(){
 
-let res = await fetch("/admin/cierre")
+fetch("/admin/cierre",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
+body:JSON.stringify({fecha})
+})
 
 let data = await res.json()
 
@@ -350,6 +375,7 @@ document.getElementById("contadorTiempo").innerText =
 "⛔ SORTEO CERRADO"
 
 return
+
 
 }
 
@@ -408,7 +434,14 @@ alert("Fecha de cierre guardada")
 }
     async function cargarPrecio(){
 
-let res = await fetch("/admin/precio")
+fetch("/admin/precio",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
+body:JSON.stringify({precio:parseInt(precio)})
+})
 
 let data = await res.json()
 
@@ -464,20 +497,20 @@ document.getElementById("resultado").innerHTML=
 }
 
 async function liberar(){
+    fetch("/liberar",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
+body:JSON.stringify({numeros})
+})
 
 let lista=document.getElementById("liberarNumeros").value
 
 let numeros=lista.split(",").map(n=>parseInt(n))
 
-await fetch("/liberar",{
 
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({numeros})
-
-})
 
 alert("Numeros liberados")
 
@@ -524,7 +557,11 @@ vendidos+" boletos vendidos"
 
 async function verCuentas(){
 
-let res=await fetch("/admin/cuentas")
+fetch("/admin/cuentas",{
+headers:{
+"x-admin-pass": passGlobal
+}
+})
 
 let data=await res.json()
 
@@ -557,10 +594,15 @@ let nequi=document.getElementById("nequi").value
 let daviplata=document.getElementById("daviplata").value
 
 await fetch("/admin/agregar-cuenta",{
+    
+    
 
 method:"POST",
 
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
 
 body:JSON.stringify({
 whatsapp,
@@ -582,7 +624,10 @@ await fetch("/admin/eliminar-cuenta",{
 
 method:"POST",
 
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
 
 body:JSON.stringify({id})
 
@@ -635,9 +680,12 @@ cont.appendChild(box)
 
 async function eliminarImagen(nombre){
 
-await fetch("/admin/eliminar-imagen",{
+fetch("/admin/eliminar-imagen",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": passGlobal
+},
 body:JSON.stringify({nombre})
 })
 
@@ -665,11 +713,13 @@ let form = new FormData()
 
 form.append("logo", archivo)
 
-await fetch("/admin/subir-logo",{
+fetch("/admin/subir-logo",{
 method:"POST",
+headers:{
+"x-admin-pass": passGlobal
+},
 body:form
 })
-
 alert("Logo actualizado")
 
 }
