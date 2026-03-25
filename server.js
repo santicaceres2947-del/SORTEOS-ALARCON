@@ -153,10 +153,6 @@ app.get("/ventas", async (req, res) => {
 
   res.json(data)
 })
-
-app.listen(3000, () => {
-  console.log("Servidor funcionando")
-})
 app.get("/numeros", async (req,res)=>{
 
 let pagina = parseInt(req.query.pagina) || 1
@@ -186,4 +182,8 @@ estado: encontrado ? "pagado" : "disponible"
 
 res.json(lista)
 
+})
+
+app.listen(3000, () => {
+  console.log("Servidor funcionando")
 })
