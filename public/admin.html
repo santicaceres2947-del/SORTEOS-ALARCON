@@ -196,11 +196,18 @@ let numeros=lista.split(",").map(n=>parseInt(n))
 
 try{
 
-let res = await fetchAdmin("/liberar",{
+let res = await fetch("/liberar",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({numeros})
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass":PASS
+},
+body:JSON.stringify({numeros:nums})
 })
+
+let data = await res.json()
+
+alert(JSON.stringify(data))
 
 let text = await res.text()
 console.log(text)
@@ -229,11 +236,15 @@ form.append("imagen", archivo)
 
 try{
 
-let res = await fetchAdmin("/admin/subir-imagen",{
+let res = await fetch("/admin/subir-imagen",{
 method:"POST",
+headers:{"x-admin-pass":PASS},
 body:form
 })
 
+let data = await res.json()
+
+alert(JSON.stringify(data))
 let text = await res.text()
 
 console.log("RESPUESTA:", text)

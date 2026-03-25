@@ -11,10 +11,18 @@ const ADMIN_PASS = "1234"
 
 // 🔐 AUTH
 function authAdmin(req,res,next){
+
   const pass = req.headers["x-admin-pass"]
+
+  console.log("PASS RECIBIDO:", pass)
+
   if(pass !== ADMIN_PASS){
+    console.log("❌ ACCESO DENEGADO")
     return res.status(401).json({error:"No autorizado"})
   }
+
+  console.log("✅ ADMIN OK")
+
   next()
 }
 
@@ -39,7 +47,15 @@ app.get("/imagenes",(req,res)=>{
   })
 })
 
-app.post("/admin/subir-imagen",authAdmin,upload.single("imagen"),(req,res)=>{
+app.post("/admin/subir-imagen", authAdmin, upload.single("imagen"), (req,res)=>{
+
+  if(!req.file){
+    console.log("❌ NO SE SUBIÓ IMAGEN")
+    return res.status(400).json({error:"No file"})
+  }
+
+  console.log("✅ IMAGEN SUBIDA:", req.file.filename)
+
   res.json({ok:true})
 })
 
@@ -172,11 +188,19 @@ app.post("/liberar",authAdmin, async (req,res)=>{
   let {numeros} = req.body
 
   for(let n of numeros){
-    await supabase
-    .from("numeros")
-    .delete()
-    .eq("numero",n)
+
+  let {error} = await supabase
+  .from("numeros")
+  .delete()
+  .eq("numero",n)
+
+  if(error){
+    console.log("❌ ERROR LIBERANDO:", error)
+  }else{
+    console.log("✅ LIBERADO:", n)
   }
+
+}
 
   res.json({ok:true})
 
