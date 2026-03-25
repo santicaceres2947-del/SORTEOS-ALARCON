@@ -10,10 +10,10 @@ app.use(express.static("public"))
 const ADMIN_PASS = "1234"
 
 // 🔐 AUTH
-function authAdmin(req, res, next) {
+function authAdmin(req,res,next){
   const pass = req.headers["x-admin-pass"]
-  if (pass !== ADMIN_PASS) {
-    return res.status(401).json({ error: "No autorizado" })
+  if(pass !== ADMIN_PASS){
+    return res.status(401).json({error:"No autorizado"})
   }
   next()
 }
@@ -32,106 +32,213 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
-app.get("/imagenes", (req, res) => {
-  fs.readdir(__dirname + "/public/imagenes", (err, files) => {
-    if (err) return res.json([])
+app.get("/imagenes",(req,res)=>{
+  fs.readdir(__dirname + "/public/imagenes",(err,files)=>{
+    if(err) return res.json([])
     res.json(files)
   })
 })
 
-app.post("/admin/subir-imagen", authAdmin, upload.single("imagen"), (req, res) => {
-  res.json({ ok: true })
+app.post("/admin/subir-imagen",authAdmin,upload.single("imagen"),(req,res)=>{
+  res.json({ok:true})
 })
 
-// 🔎 BUSCAR
-app.get("/buscar", async (req, res) => {
-  let numero = parseInt(req.query.numero)
+app.post("/admin/eliminar-imagen",authAdmin,(req,res)=>{
+  let {nombre} = req.body
+  let ruta = __dirname + "/public/imagenes/" + nombre
 
-  let { data } = await supabase
-    .from("numeros")
-    .select("*")
-    .eq("numero", numero)
-    .single()
+  if(fs.existsSync(ruta)){
+    fs.unlinkSync(ruta)
+  }
 
-  if (!data) return res.json({ estado: "disponible" })
-
-  res.json({
-    estado: "vendido",
-    nombre: data.nombre,
-    telefono: data.telefono,
-    referencia: data.referencia
-  })
+  res.json({ok:true})
 })
 
-// 💰 PAGOS (ARREGLADO)
-app.post("/pago", async (req, res) => {
-  let { numeros, nombre, telefono, referencia } = req.body
+// 🔢 NUMEROS (FUNCIONANDO)
+app.get("/numeros", async (req,res)=>{
 
-  for (let n of numeros) {
-    await supabase.from("numeros").upsert({
-      numero: n,
-      estado: "pagado",
-      nombre,
-      telefono,
-      referencia,
-      fecha_pago: new Date()
+  let pagina = parseInt(req.query.pagina) || 1
+  let limite = 100
+  let inicio = (pagina-1)*limite
+
+  let {data,error} = await supabase
+  .from("numeros")
+  .select("numero")
+
+  let vendidos = {}
+
+  if(data){
+    data.forEach(n=>{
+      vendidos[n.numero] = true
     })
   }
 
-  res.json({ ok: true })
+  let lista=[]
+
+  for(let i=0;i<limite;i++){
+
+    let num = inicio + i
+
+    if(num >= 1000000) break
+
+    lista.push({
+      numero:num,
+      estado: vendidos[num] ? "pagado" : "disponible"
+    })
+
+  }
+
+  res.json(lista)
+
+})
+
+// 💳 PAGO (ARREGLADO)
+app.post("/pago", async (req,res)=>{
+
+  let {numeros,nombre,telefono,referencia} = req.body
+
+  for(let n of numeros){
+
+    await supabase
+    .from("numeros")
+    .insert({
+      numero:n,
+      estado:"pagado",
+      nombre,
+      telefono,
+      referencia,
+      fecha_pago:new Date()
+    })
+
+  }
+
+  res.json({ok:true})
+
+})
+
+// 🎰 MAQUINA (ARREGLADA)
+app.get("/azar", async (req,res)=>{
+
+  let cantidad = parseInt(req.query.cantidad) || 1
+
+  let {data} = await supabase
+  .from("numeros")
+  .select("numero")
+
+  let vendidos = data ? data.map(n=>n.numero) : []
+
+  let resultado=[]
+
+  while(resultado.length < cantidad){
+
+    let r = Math.floor(Math.random()*1000000)
+
+    if(!vendidos.includes(r) && !resultado.includes(r)){
+      resultado.push(r)
+    }
+
+  }
+
+  res.json(resultado.map(n=>({numero:n})))
+
+})
+
+// 🔎 BUSCAR
+app.get("/buscar", async (req,res)=>{
+
+  let numero = parseInt(req.query.numero)
+
+  let {data} = await supabase
+  .from("numeros")
+  .select("*")
+  .eq("numero",numero)
+  .single()
+
+  if(!data){
+    return res.json({estado:"disponible"})
+  }
+
+  res.json({
+    estado:"vendido",
+    nombre:data.nombre,
+    telefono:data.telefono
+  })
+
 })
 
 // 🔓 LIBERAR
-app.post("/liberar", authAdmin, async (req, res) => {
-  let { numeros } = req.body
+app.post("/liberar",authAdmin, async (req,res)=>{
 
-  for (let n of numeros) {
-    await supabase.from("numeros").delete().eq("numero", n)
+  let {numeros} = req.body
+
+  for(let n of numeros){
+    await supabase
+    .from("numeros")
+    .delete()
+    .eq("numero",n)
   }
 
-  res.json({ ok: true })
+  res.json({ok:true})
+
 })
 
-// 📊 VENTAS
-app.get("/ventas", async (req, res) => {
-  let { data } = await supabase
-    .from("numeros")
-    .select("numero,nombre,telefono,referencia")
-    .eq("estado", "pagado")
+// 👤 CUENTAS
+let cuentas=[]
 
-  res.json(data || [])
+app.get("/cuenta-random",(req,res)=>{
+
+  if(cuentas.length==0){
+    return res.json({
+      whatsapp:"573000000000",
+      nequi:"0000000000",
+      daviplata:"0000000000"
+    })
+  }
+
+  let r = Math.floor(Math.random()*cuentas.length)
+
+  res.json(cuentas[r])
+
 })
 
-// 🔢 NUMEROS (CLAVE)
-app.get("/numeros", async (req,res)=>{
-
-let pagina = parseInt(req.query.pagina) || 1
-let limite = 100
-let inicio = (pagina-1) * limite
-
-let {data} = await supabase
-.from("numeros")
-.select("numero")
-.range(inicio, inicio + limite - 1)
-
-let lista=[]
-
-for(let i=0;i<limite;i++){
-
-let num = inicio + i
-let encontrado = data.find(d=>d.numero==num)
-
-lista.push({
-numero:num,
-estado: encontrado ? "pagado" : "disponible"
+app.get("/admin/cuentas",(req,res)=>{
+  res.json(cuentas)
 })
 
+app.post("/admin/agregar-cuenta",authAdmin,(req,res)=>{
+  let {whatsapp,nequi,daviplata} = req.body
+
+  cuentas.push({
+    id:Date.now(),
+    whatsapp,
+    nequi,
+    daviplata
+  })
+
+  res.json({ok:true})
+})
+
+app.post("/admin/eliminar-cuenta",authAdmin,(req,res)=>{
+  let {id} = req.body
+  cuentas = cuentas.filter(c=>c.id != id)
+  res.json({ok:true})
+})
+
+// ⚙️ CONFIG
+let config={
+  precio:10000,
+  cierre:"2026-04-01T20:00:00"
 }
 
-res.json(lista)
-
+app.get("/admin/precio",(req,res)=>{
+  res.json({precio:config.precio})
 })
 
-app.listen(3000, () => {
-  console.log("Servidor funcionando")
+app.get("/admin/cierre",(req,res)=>{
+  res.json({cierre:config.cierre})
+})
+
+// 🚀 SERVER
+app.listen(3000,()=>{
+  console.log("Servidor funcionando en puerto 3000")
 })
