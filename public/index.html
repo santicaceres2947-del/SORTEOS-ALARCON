@@ -243,35 +243,6 @@ cargarImagenes()
 let imagenes=[]
 let posicion=0
 
-async function cargarImagenes(){
-
-let res = await fetch("/imagenes")
-imagenes = await res.json()
-
-if(imagenes.length==0) return
-
-mostrarImagen()
-
-setInterval(()=>{
-posicion++
-if(posicion>=imagenes.length) posicion=0
-mostrarImagen()
-},3000)
-
-}
-
-function mostrarImagen(){
-
-let cont=document.getElementById("slider")
-
-cont.innerHTML=`
-<img src="/imagenes/${imagenes[posicion]}" 
-style="width:350px;border-radius:15px;box-shadow:0 0 20px gold">
-`
-
-}
-
-cargarImagenes()
 
 </script>
 <body>
@@ -455,7 +426,7 @@ document.getElementById("segundos").innerText=segundos
 }
 async function cargarGaleria(){
 
-let res=await fetch("/admin/imagenes")
+let res=await fetch("/imagenes")
 
 let data=await res.json()
 
@@ -616,26 +587,7 @@ div.style.background="orange"
 }
 
 }
-async function cargarImagenes(){
 
-let res = await fetch("/imagenes")
-let data = await res.json()
-
-let cont = document.getElementById("galeria")
-
-cont.innerHTML=""
-
-data.forEach(img=>{
-
-cont.innerHTML += `
-<img src="/imagenes/${img}" style="width:200px;margin:10px;">
-`
-
-})
-
-}
-
-cargarImagenes()
 
 async function maquinaAzar(){
 
