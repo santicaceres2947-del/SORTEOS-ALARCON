@@ -157,3 +157,33 @@ app.get("/ventas", async (req, res) => {
 app.listen(3000, () => {
   console.log("Servidor funcionando")
 })
+app.get("/numeros", async (req,res)=>{
+
+let pagina = parseInt(req.query.pagina) || 1
+let limite = 100
+let inicio = (pagina-1) * limite
+
+let {data,error} = await supabase
+.from("numeros")
+.select("numero,estado")
+.order("numero",{ascending:true})
+.range(inicio, inicio + limite - 1)
+
+let lista=[]
+
+for(let i=0;i<limite;i++){
+
+let num = inicio + i
+
+let encontrado = data.find(d=>d.numero==num)
+
+lista.push({
+numero:num,
+estado: encontrado ? "pagado" : "disponible"
+})
+
+}
+
+res.json(lista)
+
+})
