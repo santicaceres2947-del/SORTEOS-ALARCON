@@ -7,7 +7,7 @@ const supabase = require("./supabase")
 app.use(express.json())
 app.use(express.static("public"))
 
-const ADMIN_PASS = "1234"
+const ADMIN_PASS = "Sorteos2026"
 
 // 🔐 AUTH
 function authAdmin(req,res,next){
