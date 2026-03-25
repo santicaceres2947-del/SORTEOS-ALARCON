@@ -418,7 +418,6 @@ let lista = data.map(n=>String(n.numero).padStart(6,'0')).join(", ")
 
 document.getElementById("resultadoNumeros").innerHTML =
 "🎟️ Tus números:<br><br>"+lista
-
 }
     async function iniciarContador(){      
 let res = await fetch("/admin/cierre")
@@ -617,6 +616,26 @@ div.style.background="orange"
 }
 
 }
+async function cargarImagenes(){
+
+let res = await fetch("/imagenes")
+let data = await res.json()
+
+let cont = document.getElementById("galeria")
+
+cont.innerHTML=""
+
+data.forEach(img=>{
+
+cont.innerHTML += `
+<img src="/imagenes/${img}" style="width:200px;margin:10px;">
+`
+
+})
+
+}
+
+cargarImagenes()
 
 async function maquinaAzar(){
 
@@ -798,19 +817,14 @@ fetch("/liberar",{
 
 method:"POST",
 
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": pass   // 🔥 ESTA LÍNEA ES LA CLAVE
+},
 
 body:JSON.stringify({numeros:lista})
 
 })
-.then(r=>r.json())
-.then(data=>{
-
-alert(data.mensaje)
-cargar()
-
-})
-
 }
 
 async function panelCuentas(){
@@ -855,21 +869,18 @@ let whatsapp=prompt("Número WhatsApp")
 let nequi=prompt("Número Nequi")
 let daviplata=prompt("Número Daviplata")
 
-await fetch("/admin/agregar-cuenta",{
-
+fetch("/admin/agregar-cuenta",{
 method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": pass
+},
 body:JSON.stringify({
 whatsapp,
 nequi,
 daviplata
 })
-
 })
-
-alert("Cuenta agregada")
 
 }
 
@@ -877,18 +888,14 @@ if(opcion==2){
 
 let id=prompt("ID de la cuenta a eliminar")
 
-await fetch("/admin/eliminar-cuenta",{
-
+fetch("/admin/eliminar-cuenta",{
 method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
+headers:{
+"Content-Type":"application/json",
+"x-admin-pass": pass
+},
 body:JSON.stringify({id})
-
 })
-
-alert("Cuenta eliminada")
-
 }
 
 }

@@ -18,7 +18,7 @@ function authAdmin(req, res, next) {
   next()
 }
 
-// 📁 CARPETA IMÁGENES
+// 📁 IMÁGENES
 if (!fs.existsSync("public/imagenes")) {
   fs.mkdirSync("public/imagenes", { recursive: true })
 }
@@ -32,7 +32,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
-// 🟢 IMÁGENES
 app.get("/imagenes", (req, res) => {
   fs.readdir(__dirname + "/public/imagenes", (err, files) => {
     if (err) return res.json([])
@@ -41,17 +40,6 @@ app.get("/imagenes", (req, res) => {
 })
 
 app.post("/admin/subir-imagen", authAdmin, upload.single("imagen"), (req, res) => {
-  res.json({ ok: true })
-})
-
-app.post("/admin/eliminar-imagen", authAdmin, (req, res) => {
-  let { nombre } = req.body
-  let ruta = __dirname + "/public/imagenes/" + nombre
-
-  if (fs.existsSync(ruta)) {
-    fs.unlinkSync(ruta)
-  }
-
   res.json({ ok: true })
 })
 
@@ -65,9 +53,7 @@ app.get("/buscar", async (req, res) => {
     .eq("numero", numero)
     .single()
 
-  if (!data) {
-    return res.json({ estado: "disponible" })
-  }
+  if (!data) return res.json({ estado: "disponible" })
 
   res.json({
     estado: "vendido",
@@ -77,92 +63,55 @@ app.get("/buscar", async (req, res) => {
   })
 })
 
-// 🔓 LIBERAR (AHORA SÍ FUNCIONA)
+// 💰 PAGOS (ARREGLADO)
+app.post("/pago", async (req, res) => {
+  let { numeros, nombre, telefono, referencia } = req.body
+
+  for (let n of numeros) {
+    await supabase.from("numeros").upsert({
+      numero: n,
+      estado: "pagado",
+      nombre,
+      telefono,
+      referencia,
+      fecha_pago: new Date()
+    })
+  }
+
+  res.json({ ok: true })
+})
+
+// 🔓 LIBERAR
 app.post("/liberar", authAdmin, async (req, res) => {
   let { numeros } = req.body
 
   for (let n of numeros) {
-    await supabase
-      .from("numeros")
-      .delete()
-      .eq("numero", n)
+    await supabase.from("numeros").delete().eq("numero", n)
   }
 
-  res.json({ mensaje: "Numeros liberados" })
-})
-
-// 💰 PRECIO
-let config = {
-  precio: 10000,
-  cierre: "2026-04-01T20:00:00"
-}
-
-app.get("/admin/precio", (req, res) => {
-  res.json({ precio: config.precio })
-})
-
-app.post("/admin/precio", authAdmin, (req, res) => {
-  config.precio = req.body.precio
-  res.json({ ok: true })
-})
-
-// 📅 CIERRE
-app.get("/admin/cierre", (req, res) => {
-  res.json({ cierre: config.cierre })
-})
-
-app.post("/admin/cierre", authAdmin, (req, res) => {
-  config.cierre = req.body.fecha
-  res.json({ ok: true })
-})
-
-// 👤 CUENTAS
-let cuentas = []
-
-app.get("/admin/cuentas", (req, res) => {
-  res.json(cuentas)
-})
-
-app.post("/admin/agregar-cuenta", authAdmin, (req, res) => {
-  let { whatsapp, nequi, daviplata } = req.body
-
-  cuentas.push({
-    id: Date.now(),
-    whatsapp,
-    nequi,
-    daviplata
-  })
-
-  res.json({ ok: true })
-})
-
-app.post("/admin/eliminar-cuenta", authAdmin, (req, res) => {
-  let { id } = req.body
-  cuentas = cuentas.filter(c => c.id != id)
   res.json({ ok: true })
 })
 
 // 📊 VENTAS
 app.get("/ventas", async (req, res) => {
-  let { data, error } = await supabase
+  let { data } = await supabase
     .from("numeros")
     .select("numero,nombre,telefono,referencia")
     .eq("estado", "pagado")
 
-  if (error) return res.json([])
-
-  res.json(data)
+  res.json(data || [])
 })
+
+// 🔢 NUMEROS (CLAVE)
 app.get("/numeros", async (req,res)=>{
 
 let pagina = parseInt(req.query.pagina) || 1
 let limite = 100
 let inicio = (pagina-1) * limite
 
-let {data,error} = await supabase
+let {data} = await supabase
 .from("numeros")
-.select("numero,estado")
-.order("numero",{ascending:true})
+.select("numero")
 .range(inicio, inicio + limite - 1)
 
 let lista=[]
@@ -170,7 +119,6 @@ let lista=[]
 for(let i=0;i<limite;i++){
 
 let num = inicio + i
-
 let encontrado = data.find(d=>d.numero==num)
 
 lista.push({
